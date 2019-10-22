@@ -1,6 +1,25 @@
 import React, { Component, Fragment } from 'react';
 import {createPortal} from "react-dom";
 
+//HOC 모든 컴포넌트를 보호해줌(각각 애러처리 할 필요가없음)
+const BoundaryHOC = ProtectedComponent => class Boundary extends Component {
+  state = {
+    hasError:false
+  }
+  componentDidCatch = () => {
+    this.setState({
+      hasError: true
+    })
+  }
+  render(){
+    const {hasError} = this.state;
+    if (hasError){
+      return <ErrorFallback/>
+    }else{
+      return <ProtectedComponent/>
+    }
+  }
+}
 // Portal의 에러를 발견할 수 없다.
 class ErrorMaker extends Component {
   state = {
@@ -19,6 +38,7 @@ class ErrorMaker extends Component {
   }
 }
 
+const PErrorMaker = BoundaryHOC(ErrorMaker)
 
 //Portal을 이용하여 React의 scope(root)밖에서도 수정을 할 수 있다.
 class Portals extends Component{
@@ -30,6 +50,8 @@ class Portals extends Component{
   }
 }
 
+const PPortals = BoundaryHOC(Portals)
+
 const Message = () => "Just touched it!";
 
 class ReturnTypes extends Component{
@@ -40,28 +62,18 @@ class ReturnTypes extends Component{
 
 const ErrorFallback = () => "Sorry something went wrong"
 class App extends Component {
-  state = {
-    hasError:false
-  };
-  
-  componentDidMount = (error, info) => {
-    console.log(`catched ${error} and error infomation = ${JSON.stringify(info)}`);
-    this.setState({
-      hasError:true
-    });
-  };
-
   render(){ 
     const {hasError} = this.state
     return (
       //Fragment를 사용하여 기존의 방식인 Array와 span으로 묶어서 할 필요가없다.
       <Fragment>
         <ReturnTypes />
-        <Portals/>
-        {hasError ? <ErrorFallback/> : <ErrorMaker />}
+        <PPortals/>
+        <PErrorMaker/>
       </Fragment>
     )
   }
 }
 
-export default App;
+
+export default BoundaryHOC(App);
