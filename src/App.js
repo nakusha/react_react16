@@ -1,6 +1,33 @@
 import React, { Component, Fragment } from 'react';
 import {createPortal} from "react-dom";
 
+const MAX_PIZZAS = 20;
+
+const eatPizza = (state, props) => {
+  const{pizzas} = state;
+  // null 을 리턴하면 state가 업데이트 되느넋을 막을 수 있다.
+  if(pizzas < MAX_PIZZAS){
+    return {
+      pizzas:pizzas + 1
+    }
+  }else{
+    return null
+  }
+};
+
+class Controlled extends Component{
+  state = {
+    pizzas:1
+  };
+  render (){
+    const { pizzas } = this.state
+    return <button onClick={this._handleClick}>{`I have eaten ${pizzas} ${pizzas === 1 ? "pizza" : "pizzas"}`}</button>
+  }
+  _handleClick = () => {
+    this.setState(eatPizza)
+  }
+}
+/*
 //HOC 모든 컴포넌트를 보호해줌(각각 애러처리 할 필요가없음)
 const BoundaryHOC = ProtectedComponent => class Boundary extends Component {
   state = {
@@ -61,19 +88,22 @@ class ReturnTypes extends Component{
 }
 
 const ErrorFallback = () => "Sorry something went wrong"
+*/
 class App extends Component {
   render(){ 
-    const {hasError} = this.state
+    
     return (
-      //Fragment를 사용하여 기존의 방식인 Array와 span으로 묶어서 할 필요가없다.
+      <Controlled />
+      /*Fragment를 사용하여 기존의 방식인 Array와 span으로 묶어서 할 필요가없다.
       <Fragment>
         <ReturnTypes />
         <PPortals/>
         <PErrorMaker/>
       </Fragment>
+      */
     )
   }
 }
 
-
-export default BoundaryHOC(App);
+export default App;
+//export default BoundaryHOC(App);
